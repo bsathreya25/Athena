@@ -1,32 +1,4 @@
 
-from pathlib import Path
-from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
-from datetime import date
-
-# -----------------------------------
-# ATHENA DOCUMENTATION GENERATOR
-# -----------------------------------
-
-PROJECT = Path("ATHENA_Documentation")
-
-# Create project directories
-folders = [
-    "screenshots",
-    "docs",
-    "presentation"
-]
-
-for folder in folders:
-    (PROJECT / folder).mkdir(parents=True, exist_ok=True)
-
-
-# -----------------------------------
-# 1. CREATE README.md
-# -----------------------------------
-
-readme = """
 # ATHENA - Real-Time Fleet Intelligence Platform
 
 ## Project Overview
