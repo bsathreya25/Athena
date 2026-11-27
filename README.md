@@ -268,56 +268,6 @@ slides = [
 ]
 
 
-def add_slide(title, points, cover=False):
-    layout = prs.slide_layouts[6]
-    slide = prs.slides.add_slide(layout)
-
-    # Dark background
-    background = slide.background.fill
-    background.solid()
-    background.fore_color.rgb = RGBColor(17, 24, 39)
-
-    # Title
-    title_box = slide.shapes.add_textbox(
-        Inches(0.7), Inches(0.6),
-        Inches(12), Inches(1.0)
-    )
-    title_frame = title_box.text_frame
-    title_frame.text = title
-
-    for paragraph in title_frame.paragraphs:
-        paragraph.font.size = Pt(34 if cover else 30)
-        paragraph.font.bold = True
-        paragraph.font.color.rgb = RGBColor(34, 211, 166)
-
-    # Content
-    content_box = slide.shapes.add_textbox(
-        Inches(1), Inches(2.0),
-        Inches(11.3), Inches(4.7)
-    )
-    frame = content_box.text_frame
-    frame.word_wrap = True
-
-    for index, point in enumerate(points):
-        paragraph = (
-            frame.paragraphs[0]
-            if index == 0 else frame.add_paragraph()
-        )
-        paragraph.text = ("• " if not cover else "") + point
-        paragraph.font.size = Pt(25 if cover else 22)
-        paragraph.font.color.rgb = RGBColor(240, 244, 248)
-        paragraph.space_after = Pt(20)
-
-
-for index, (title, points) in enumerate(slides):
-    add_slide(title, points, cover=(index == 0))
-
-presentation_path = (
-    PROJECT / "presentation" / "ATHENA_Presentation.pptx"
-)
-
-prs.save(presentation_path)
-
 
 
 # 5. COMPLETION MESSAGE
