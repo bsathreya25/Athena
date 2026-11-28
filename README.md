@@ -179,72 +179,96 @@ for filename, content in documents.items():
 
 
 # ATHENA - AI Usage Log
-| Section | Written form |
+Ask User
+Completed with input: {
+  "message": "Do you mean improve the formatting of the tables I’ve written here, or implement a visual redesign for tables in the ATHENA dashboard?",
+  "requestedSchema": {
+    "properties": {
+      "target": {
+        "type": "string",
+        "title": "Table target",
+        "oneOf": [
+          {
+            "const": "chat",
+            "title": "Polish the tables in this conversation"
+          },
+          {
+            "const": "dashboard",
+            "title": "Implement the redesign in the ATHENA dashboard"
+          }
+        ]
+      }
+    }
+  }
+}
+
+Here’s a cleaner, consistent layout for the tables in this conversation.
+
+### ATHENA generator
+
+| Component | Purpose | Details |
+|---|---|---|
+| Module | Simulates vehicle telemetry | Generates CAN-like and GPS data for fleet testing and demonstrations. |
+| Fleet hubs | Provides sample GPS locations | Bengaluru, Mumbai, Delhi, Hyderabad, and Pune. |
+| Scenarios | Simulates operating conditions | Normal, high temperature, critical overheating, low voltage, missing data, invalid values, and mixed. |
+| Timestamp helper | Creates event timestamps | Uses the current time in UTC and ISO 8601 format. |
+
+### ATHENA telemetry schema
+
+| Field | Required? | Accepted values |
+|---|---:|---|
+| Vehicle ID | Yes | Text identifier |
+| Timestamp | Yes | ISO 8601 text |
+| Engine temperature | Yes | −40°C to 200°C |
+| Vehicle speed | Yes | 0 to 260 km/h |
+| Battery voltage | Yes | 0 to 36 V |
+| Fuel level | Yes | 0% to 100% |
+| RPM | Yes | Numeric; the provided excerpt doesn’t show its range or unit. |
+
+### ATHENA inspector
+
+| Step | What it does |
 |---|---|
-| Module description | This module simulates vehicle telemetry for ATHENA. It generates CAN-like and GPS data for a fleet and supports repeatable fault scenarios for testing and demonstrations. |
-| Imports | The module uses Python libraries for command-line arguments, JSON, random values, timing, HTTP requests, UTC timestamps, file paths, and type annotations. |
-| Fleet hub coordinates | It defines five representative Indian fleet hubs: Bengaluru, Mumbai, Delhi, Hyderabad, and Pune. Each hub is represented by latitude and longitude. |
-| Supported scenarios | The generator supports normal operation, high temperature, critical overheating, low voltage, missing data, invalid values, and mixed scenarios. |
-| UTC timestamp helper | The helper returns the current UTC date and time in ISO 8601 format, ending in `Z`. |
+| Read input | Loads a JSON or JSON Lines file. |
+| Handle empty files | Returns an empty list when the file has no content. |
+| Parse JSON Lines | Treats each non-empty line as a separate record. |
+| Parse JSON | Uses each array item as a record, or wraps a single object as one record. |
+| Inspect records | Classifies each record and counts severity levels and issue types. |
+| Excerpt limit | The provided code ends before showing the final summary or flagged-record handling. |
 
+### ATHENA unit tests
 
-
-| Section | Written form |
+| Test | Verification |
 |---|---|
-| Module purpose | Defines ATHENA’s canonical vehicle telemetry schema, validation rules, and rule evaluation. |
-| Imports | Uses future annotations, Python’s date/time parser, and `Any` for flexible field-specification types. |
-| `vehicle_id` | Required text field identifying the vehicle. Unit: ID. |
-| `timestamp` | Required text field containing a timestamp in ISO 8601 format. |
-| `engine_temp_c` | Required numeric field for engine temperature. Valid range: −40°C to 200°C. |
-| `vehicle_speed_kmh` | Required numeric field for vehicle speed. Valid range: 0 to 260 km/h. |
-| `battery_voltage_v` | Required numeric field for battery voltage. Valid range: 0 to 36 V. |
-| `fuel_level_pct` | Required numeric field for fuel level. Valid range: 0% to 100%. |
-| `rpm` | Required numeric field for engine RPM. The excerpt ends before its range or unit is shown. |
+| Sample payloads | Each sample receives its expected severity. |
+| Normal generation | Five vehicles over three rounds produce 15 valid records, all classified as normal. |
+| Critical overheating | Every record generated for three vehicles over two rounds is classified as critical. |
+| Mixed batch | A mixed batch for 10 vehicles over five rounds is inspected; the excerpt doesn’t show the assertions. |
 
+### ATHENA sample payloads
 
+| Case | Scenario | Key values | Expected severity |
+|---|---|---|---|
+| TC-01 | Normal operation | 85°C; 54.5 km/h; 13.6 V; 72% fuel; 2,150 RPM; no diagnostic codes | NORMAL |
+| TC-02 | High engine temperature | 99.5°C; 48 km/h; 13.4 V; 65% fuel; 2,900 RPM; no diagnostic codes | WARNING |
+| TC-03 | Critical temperature and cooling stress | 112°C; 12 km/h; 13.1 V; 58% fuel. Remaining fields aren’t shown in the excerpt. | CRITICAL |
 
-| Part | Written description |
-|---|---|
-| Purpose | Inspects generated vehicle telemetry stored as JSON or JSON Lines and checks its schema and alert accuracy. |
-| Imports | Uses command-line argument handling, JSON processing, a counter for tallying results, file paths, and flexible data types. It also uses ATHENA’s telemetry classifier. |
-| Record loading | Reads a file as UTF-8 text. An empty file produces an empty list of records. |
-| JSON Lines handling | For a JSON Lines file, parses each non-empty line as a separate record. |
-| JSON handling | For a standard JSON file, keeps each item when the file contains an array; if it contains one object, wraps that object in a list. |
-| Record inspection | Classifies each record, counts how many records have each severity, and counts issues by their type. It also prepares a list for flagged records. |
-| Excerpt limit | The provided excerpt ends while processing issues, so it doesn’t show how flagged records are populated or what summary is returned. |
+### VIGILANT test results
 
-
-
-| Test | Written description |
-|---|---|
-| Sample payload severity checks | Loads the sample payload cases and checks that each one receives its expected severity. Each case is reported separately if it fails. |
-| Normal generator scenario | Generates telemetry for 5 vehicles over 3 rounds, expecting 15 records. It verifies each record is valid and classified as normal. |
-| Critical overheating scenario | Generates telemetry for 3 vehicles over 2 rounds and checks that every generated record is classified as critical. |
-| Mixed batch inspector | Generates a mixed batch for 10 vehicles over 5 rounds and passes it to the inspector. The excerpt ends before showing what inspection results are checked. |
-
-
-| Case | Written description |
-|---|---|
-| TC-01 — Normal operation | Vehicle ATH-001 reports an engine temperature of 85°C, speed of 54.5 km/h, battery voltage of 13.6 volts, fuel level of 72%, and engine speed of 2,150 RPM. Its GPS coordinates are in Bengaluru, and it has no diagnostic trouble codes. Expected severity: normal. |
-| TC-02 — High engine temperature | Vehicle ATH-002 reports an engine temperature of 99.5°C, speed of 48 km/h, battery voltage of 13.4 volts, fuel level of 65%, and engine speed of 2,900 RPM. Its GPS coordinates are also in Bengaluru, and it has no diagnostic trouble codes. Expected severity: warning. |
-| TC-03 — Critical temperature and cooling stress | Vehicle ATH-003 reports an engine temperature of 112°C, speed of 12 km/h, battery voltage of 13.1 volts, and fuel level of 58%. The case is expected to be critical. The provided excerpt ends before showing the remaining fields. |
-
-
-
-| Test case | Temperature | Voltage | Generated status |
+| Case | Temperature | Voltage | Result |
 |---|---:|---:|---|
-| TC01 - Normal | 28 | 5.0 | NORMAL |
-| TC02 - Normal | 32 | 4.8 | NORMAL |
-| TC03 - High Temperature | 42 | 5.0 | HIGH TEMPERATURE WARNING |
-| TC04 - Critical Temperature | 65 | 5.0 | CRITICAL ALERT |
-| TC05 - Low Voltage | 30 | 2.5 | LOW VOLTAGE WARNING |
-| TC06 - High Temp + Low Voltage | 45 | 2.5 | HIGH TEMPERATURE WARNING |
-| TC07 - Missing Temperature | None | 5.0 | ERROR: DATA MISSING |
-| TC08 - Missing Voltage | 30 | None | ERROR: DATA MISSING |
-| TC09 - Invalid Temperature | -200 | 5.0 | ERROR: INVALID SENSOR VALUE |
-| TC10 - Invalid Voltage | 30 | -5.0 | ERROR: INVALID SENSOR VALUE |
-| TC11 - Empty Input | None | None | ERROR: DATA MISSING |
-| TC12 - Extreme Temperature | 100 | 5.0 | CRITICAL ALERT |
+| TC01 — Normal | 28 | 5.0 | NORMAL |
+| TC02 — Normal | 32 | 4.8 | NORMAL |
+| TC03 — High temperature | 42 | 5.0 | HIGH TEMPERATURE WARNING |
+| TC04 — Critical temperature | 65 | 5.0 | CRITICAL ALERT |
+| TC05 — Low voltage | 30 | 2.5 | LOW VOLTAGE WARNING |
+| TC06 — High temperature and low voltage | 45 | 2.5 | HIGH TEMPERATURE WARNING |
+| TC07 — Missing temperature | Missing | 5.0 | ERROR: DATA MISSING |
+| TC08 — Missing voltage | 30 | Missing | ERROR: DATA MISSING |
+| TC09 — Invalid temperature | −200 | 5.0 | ERROR: INVALID SENSOR VALUE |
+| TC10 — Invalid voltage | 30 | −5.0 | ERROR: INVALID SENSOR VALUE |
+| TC11 — Empty input | Missing | Missing | ERROR: DATA MISSING |
+| TC12 — Extreme temperature | 100 | 5.0 | CRITICAL ALERT |
 
 
 
