@@ -179,6 +179,226 @@ for filename, content in documents.items():
 
 
 # ATHENA - AI Usage Log
+"""Canonical vehicle telemetry schema, validation, and rule evaluation for ATHENA."""
+
+from __future__ import annotations
+
+import math
+from datetime import datetime
+from typing import Any
+
+# Physical validity bounds used to spot corrupted, missing, or impossible sensor values.
+FIELD_SPECS: dict[str, dict[str, Any]] = {
+    "vehicle_id": {"type": (str,), "required": True, "unit": "id"},
+    "timestamp": {"type": (str,), "required": True, "unit": "iso8601"},
+    "engine_temp_c": {
+        "type": (int, float),
+        "required": True,
+        "min": -40.0,
+        "max": 200.0,
+        "unit": "°C",
+    },
+    "vehicle_speed_kmh": {
+        "type": (int, float),
+        "required": True,
+        "min": 0.0,
+        "max": 260.0,
+        "unit": "km/h",
+    },
+    "battery_voltage_v": {
+        "type": (int, float),
+        "required": True,
+        "min": 0.0,
+        "max": 36.0,
+        "unit": "V",
+    },
+    "fuel_level_pct": {
+        "type": (int, float),
+        "required": True,
+        "min": 0.0,
+        "max": 100.0,
+        "unit": "%",
+    },
+    "rpm": {
+        "type": (int, float),
+        "required": True,
+        "min": 0.0,
+        "max": 10_000.0,
+        "unit": "rpm",
+    },
+}
+
+SEVERITY_ORDER = {"info": 0, "warning": 1, "critical": 2}
+
+
+def _is_number(value: Any) -> bool:
+    """Return whether value is a finite numeric value (excluding booleans)."""
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(value)
+    )
+
+
+def _parse_timestamp(value: str) -> datetime | None:
+    """Parse an ISO-8601 timestamp, accepting a trailing Z for UTC."""
+    normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
+    try:
+        return datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+
+
+def validate_telemetry(payload: Any) -> list[str]:
+    """Validate a telemetry payload and return all validation error messages.
+
+    Unknown fields are allowed so payloads can carry additional metadata.
+    """
+    if not isinstance(payload, dict):
+        return ["Payload must be a JSON object."]
+
+    errors: list[str] = []
+
+    for field, spec in FIELD_SPECS.items():
+        if field not in payload:
+            if spec["required"]:
+                errors.append(f"Missing required field: {field}.")
+            continue
+
+        value = payload[field]
+        expected_types = spec["type"]
+
+        if expected_types == (int, float):
+            if not _is_number(value):
+                errors.append(f"{field} must be a finite number.")
+                continue
+        elif not isinstance(value, expected_types):
+            expected = " or ".join(t.__name__ for t in expected_types)
+            errors.append(f"{field} must be of type {expected}.")
+            continue
+
+        if field == "vehicle_id" and not value.strip():
+            errors.append("vehicle_id must not be empty.")
+
+        if field == "timestamp":
+            if not value.strip():
+                errors.append("timestamp must not be empty.")
+            elif _parse_timestamp(value) is None:
+                errors.append("timestamp must be a valid ISO-8601 datetime.")
+
+        if _is_number(value):
+            minimum = spec.get("min")
+            maximum = spec.get("max")
+            if minimum is not None and value < minimum:
+                errors.append(f"{field} must be at least {minimum} {spec['unit']}.")
+            if maximum is not None and value > maximum:
+                errors.append(f"{field} must be at most {maximum} {spec['unit']}.")
+
+    return errors
+
+
+def evaluate_rules(payload: Any) -> list[dict[str, str]]:
+    """Evaluate operational thresholds and return alert dictionaries.
+
+    Each alert has ``code``, ``field``, ``severity``, and ``message`` keys.
+    Invalid or absent values are skipped; use :func:`validate_telemetry`
+    to report payload problems.
+    """
+    if not isinstance(payload, dict):
+        return []
+
+    alerts: list[dict[str, str]] = []
+
+    def add_alert(
+        code: str, field: str, severity: str, message: str
+    ) -> None:
+        alerts.append(
+            {
+                "code": code,
+                "field": field,
+                "severity": severity,
+                "message": message,
+            }
+        )
+
+    engine_temp = payload.get("engine_temp_c")
+    if _is_number(engine_temp):
+        if engine_temp >= 125:
+            add_alert(
+                "ENGINE_OVERHEAT",
+                "engine_temp_c",
+                "critical",
+                f"Engine temperature is critically high ({engine_temp} °C).",
+            )
+        elif engine_temp >= 110:
+            add_alert(
+                "ENGINE_TEMP_HIGH",
+                "engine_temp_c",
+                "warning",
+                f"Engine temperature is high ({engine_temp} °C).",
+            )
+
+    battery_voltage = payload.get("battery_voltage_v")
+    if _is_number(battery_voltage):
+        if battery_voltage < 11:
+            add_alert(
+                "BATTERY_CRITICAL",
+                "battery_voltage_v",
+                "critical",
+                f"Battery voltage is critically low ({battery_voltage} V).",
+            )
+        elif battery_voltage < 12:
+            add_alert(
+                "BATTERY_LOW",
+                "battery_voltage_v",
+                "warning",
+                f"Battery voltage is low ({battery_voltage} V).",
+            )
+
+    fuel_level = payload.get("fuel_level_pct")
+    if _is_number(fuel_level):
+        if fuel_level <= 5:
+            add_alert(
+                "FUEL_CRITICAL",
+                "fuel_level_pct",
+                "critical",
+                f"Fuel level is critically low ({fuel_level}%).",
+            )
+        elif fuel_level <= 10:
+            add_alert(
+                "FUEL_LOW",
+                "fuel_level_pct",
+                "warning",
+                f"Fuel level is low ({fuel_level}%).",
+            )
+
+    rpm = payload.get("rpm")
+    if _is_number(rpm):
+        if rpm >= 6_500:
+            add_alert(
+                "RPM_CRITICAL",
+                "rpm",
+                "critical",
+                f"Engine RPM is critically high ({rpm} rpm).",
+            )
+        elif rpm >= 5_500:
+            add_alert(
+                "RPM_HIGH",
+                "rpm",
+                "warning",
+                f"Engine RPM is high ({rpm} rpm).",
+            )
+
+    alerts.sort(key=lambda alert: SEVERITY_ORDER[alert["severity"]], reverse=True)
+    return alerts
+
+
+def classify_severity(payload: Any) -> str:
+    """Return the highest alert severity, or ``info`` when there are no alerts."""
+    alerts = evaluate_rules(payload)
+    if not alerts:
+        return "info"
+    return max(alerts, key=lambda alert: SEVERITY_ORDER[alert["severity"]])["severity"]
 
 | Date | AI Tool | Purpose | Human Verification |
 |---|---|---|---|
