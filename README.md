@@ -399,6 +399,107 @@ def classify_severity(payload: Any) -> str:
     if not alerts:
         return "info"
     return max(alerts, key=lambda alert: SEVERITY_ORDER[alert["severity"]])["severity"]
+    """Inspect generated telemetry JSON/JSONL records for schema and alert accuracy."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from collections import Counter
+from pathlib import Path
+from typing import Any
+
+from telemetry.schema import classify_telemetry
+
+
+def load_records(path: Path) -> list[Any]:
+    """Load telemetry records from a .json (object or array) or .jsonl file."""
+    raw = path.read_text(encoding="utf-8").strip()
+    if not raw:
+        return []
+
+    if path.suffix.lower() == ".jsonl":
+        records = []
+        for line_number, line in enumerate(raw.splitlines(), start=1):
+            if not line.strip():
+                continue
+            try:
+                records.append(json.loads(line))
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"Invalid JSON on line {line_number} of {path}: {exc.msg}"
+                ) from exc
+        return records
+
+    parsed = json.loads(raw)
+    if isinstance(parsed, list):
+        return parsed
+    return [parsed]
+
+
+def inspect_records(records: list[Any]) -> dict[str, Any]:
+    """Validate and classify every record and return a structured inspection summary."""
+    severity_counts: Counter[str] = Counter()
+    issue_counts: Counter[str] = Counter()
+    flagged_records: list[dict[str, Any]] = []
+
+    for index, record in enumerate(records):
+        result = classify_telemetry(record)
+        severity = str(result.get("severity", "unknown"))
+        issues = result.get("issues", [])
+
+        if not isinstance(issues, list):
+            issues = [str(issues)]
+
+        severity_counts[severity] += 1
+
+        for issue in issues:
+            issue_type = str(issue).split(":", 1)[0].strip()
+            issue_counts[issue_type or "unknown"] += 1
+
+        if issues or severity.strip().lower() not in {
+            "normal",
+            "ok",
+            "healthy",
+            "none",
+        }:
+            flagged_records.append(
+                {
+                    "index": index,
+                    "severity": severity,
+                    "issues": issues,
+                    "record": record,
+                }
+            )
+
+    return {
+        "records_inspected": len(records),
+        "severity_counts": dict(sorted(severity_counts.items())),
+        "issue_counts": dict(sorted(issue_counts.items())),
+        "flagged_records": flagged_records,
+    }
+
+
+def main() -> int:
+    """Run the inspector CLI and print a JSON inspection summary."""
+    parser = argparse.ArgumentParser(
+        description="Inspect telemetry records from a JSON or JSONL file."
+    )
+    parser.add_argument("input", type=Path, help="Path to the input .json or .jsonl file")
+    args = parser.parse_args()
+
+    try:
+        records = load_records(args.input)
+        summary = inspect_records(records)
+    except (OSError, json.JSONDecodeError, ValueError) as exc:
+        parser.error(str(exc))
+
+    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
 
 | Date | AI Tool | Purpose | Human Verification |
 |---|---|---|---|
