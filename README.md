@@ -199,6 +199,16 @@ for filename, content in documents.items():
 | `fuel_level_pct` | Required numeric field for fuel level. Valid range: 0% to 100%. |
 | `rpm` | Required numeric field for engine RPM. The excerpt ends before its range or unit is shown. |
 
+| Part | Written description |
+|---|---|
+| Purpose | Inspects generated vehicle telemetry stored as JSON or JSON Lines and checks its schema and alert accuracy. |
+| Imports | Uses command-line argument handling, JSON processing, a counter for tallying results, file paths, and flexible data types. It also uses ATHENA’s telemetry classifier. |
+| Record loading | Reads a file as UTF-8 text. An empty file produces an empty list of records. |
+| JSON Lines handling | For a JSON Lines file, parses each non-empty line as a separate record. |
+| JSON handling | For a standard JSON file, keeps each item when the file contains an array; if it contains one object, wraps that object in a list. |
+| Record inspection | Classifies each record, counts how many records have each severity, and counts issues by their type. It also prepares a list for flagged records. |
+| Excerpt limit | The provided excerpt ends while processing issues, so it doesn’t show how flagged records are populated or what summary is returned. |
+
 | Test case | Temperature | Voltage | Generated status |
 |---|---:|---:|---|
 | TC01 - Normal | 28 | 5.0 | NORMAL |
