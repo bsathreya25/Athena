@@ -187,6 +187,18 @@ for filename, content in documents.items():
 | Supported scenarios | The generator supports normal operation, high temperature, critical overheating, low voltage, missing data, invalid values, and mixed scenarios. |
 | UTC timestamp helper | The helper returns the current UTC date and time in ISO 8601 format, ending in `Z`. |
 
+| Section | Written form |
+|---|---|
+| Module purpose | Defines ATHENA’s canonical vehicle telemetry schema, validation rules, and rule evaluation. |
+| Imports | Uses future annotations, Python’s date/time parser, and `Any` for flexible field-specification types. |
+| `vehicle_id` | Required text field identifying the vehicle. Unit: ID. |
+| `timestamp` | Required text field containing a timestamp in ISO 8601 format. |
+| `engine_temp_c` | Required numeric field for engine temperature. Valid range: −40°C to 200°C. |
+| `vehicle_speed_kmh` | Required numeric field for vehicle speed. Valid range: 0 to 260 km/h. |
+| `battery_voltage_v` | Required numeric field for battery voltage. Valid range: 0 to 36 V. |
+| `fuel_level_pct` | Required numeric field for fuel level. Valid range: 0% to 100%. |
+| `rpm` | Required numeric field for engine RPM. The excerpt ends before its range or unit is shown. |
+
 | Test case | Temperature | Voltage | Generated status |
 |---|---:|---:|---|
 | TC01 - Normal | 28 | 5.0 | NORMAL |
