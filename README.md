@@ -179,8 +179,7 @@ for filename, content in documents.items():
 
 
 # ATHENA - AI Usage Log
-
-    | Test case | Temperature | Voltage | Generated status |
+| Test case | Temperature | Voltage | Generated status |
 |---|---:|---:|---|
 | TC01 - Normal | 28 | 5.0 | NORMAL |
 | TC02 - Normal | 32 | 4.8 | NORMAL |
@@ -194,8 +193,6 @@ for filename, content in documents.items():
 | TC10 - Invalid Voltage | 30 | -5.0 | ERROR: INVALID SENSOR VALUE |
 | TC11 - Empty Input | None | None | ERROR: DATA MISSING |
 | TC12 - Extreme Temperature | 100 | 5.0 | CRITICAL ALERT |
-| Date | AI Tool | Purpose | Human Verification |
-|---|---|---|---|
-| YYYY-MM-DD | ChatGPT | Documentation assistance | Pending |
-| YYYY-MM-DD | Cursor | Code assistance | Pending |
+
+
 
