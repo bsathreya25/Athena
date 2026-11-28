@@ -186,6 +186,7 @@ for filename, content in documents.items():
 | Fleet hub coordinates | It defines five representative Indian fleet hubs: Bengaluru, Mumbai, Delhi, Hyderabad, and Pune. Each hub is represented by latitude and longitude. |
 | Supported scenarios | The generator supports normal operation, high temperature, critical overheating, low voltage, missing data, invalid values, and mixed scenarios. |
 | UTC timestamp helper | The helper returns the current UTC date and time in ISO 8601 format, ending in `Z`. |
+
 | Test case | Temperature | Voltage | Generated status |
 |---|---:|---:|---|
 | TC01 - Normal | 28 | 5.0 | NORMAL |
