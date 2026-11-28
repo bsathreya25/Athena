@@ -179,6 +179,13 @@ for filename, content in documents.items():
 
 
 # ATHENA - AI Usage Log
+| Section | Written form |
+|---|---|
+| Module description | This module simulates vehicle telemetry for ATHENA. It generates CAN-like and GPS data for a fleet and supports repeatable fault scenarios for testing and demonstrations. |
+| Imports | The module uses Python libraries for command-line arguments, JSON, random values, timing, HTTP requests, UTC timestamps, file paths, and type annotations. |
+| Fleet hub coordinates | It defines five representative Indian fleet hubs: Bengaluru, Mumbai, Delhi, Hyderabad, and Pune. Each hub is represented by latitude and longitude. |
+| Supported scenarios | The generator supports normal operation, high temperature, critical overheating, low voltage, missing data, invalid values, and mixed scenarios. |
+| UTC timestamp helper | The helper returns the current UTC date and time in ISO 8601 format, ending in `Z`. |
 | Test case | Temperature | Voltage | Generated status |
 |---|---:|---:|---|
 | TC01 - Normal | 28 | 5.0 | NORMAL |
