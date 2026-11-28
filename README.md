@@ -562,6 +562,46 @@ class TelemetryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+    [
+  {
+    "case_id": "TC-01",
+    "description": "Normal operating telemetry",
+    "expected_severity": "NORMAL",
+    "payload": {
+      "vehicle_id": "ATH-001",
+      "timestamp": "2026-11-28T01:00:00Z",
+      "engine_temp_c": 85.0,
+      "vehicle_speed_kmh": 54.5,
+      "battery_voltage_v": 13.6,
+      "fuel_level_pct": 72.0,
+      "rpm": 2150,
+      "gps": {
+        "lat": 12.9716,
+        "lon": 77.5946
+      },
+      "dtc_codes": []
+    }
+  },
+  {
+    "case_id": "TC-02",
+    "description": "High engine temperature warning",
+    "expected_severity": "WARNING",
+    "payload": {
+      "vehicle_id": "ATH-002",
+      "timestamp": "2026-11-28T01:00:05Z",
+      "engine_temp_c": 99.5,
+      "vehicle_speed_kmh": 48.0,
+      "battery_voltage_v": 13.4,
+      "fuel_level_pct": 65.0,
+      "rpm": 2900,
+      "gps": {
+        "lat": 12.9751,
+        "lon": 77.5982
+      },
+      "dtc_codes": []
+    }
+  }
+]
 
 | Date | AI Tool | Purpose | Human Verification |
 |---|---|---|---|
