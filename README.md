@@ -500,6 +500,68 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+    """Unit tests for ATHENA telemetry generation, validation, and alert classification."""
+
+from __future__ import annotations
+
+import json
+import unittest
+from pathlib import Path
+
+from generator.telemetry_generator import generate_batch
+from telemetry.inspector import inspect_records
+from telemetry.schema import classify_telemetry, validate_record
+
+
+class TelemetryTests(unittest.TestCase):
+    def test_sample_payloads_match_expected_severities(self) -> None:
+        payloads_path = Path(__file__).parent / "sample_payloads.json"
+        cases = json.loads(payloads_path.read_text(encoding="utf-8"))
+
+        for case in cases:
+            with self.subTest(case_id=case["case_id"]):
+                result = classify_telemetry(case["payload"])
+                self.assertEqual(result["severity"], case["expected_severity"])
+
+    def test_generator_normal_scenario_produces_valid_records(self) -> None:
+        events = generate_batch(
+            vehicle_count=5,
+            rounds=3,
+            scenario="normal",
+            seed=42,
+        )
+        self.assertEqual(len(events), 15)
+
+        for event in events:
+            self.assertEqual(validate_record(event), [])
+            self.assertEqual(classify_telemetry(event)["severity"], "NORMAL")
+
+    def test_generator_critical_overheat_triggers_critical(self) -> None:
+        events = generate_batch(
+            vehicle_count=3,
+            rounds=2,
+            scenario="critical_overheat",
+            seed=7,
+        )
+
+        for event in events:
+            result = classify_telemetry(event)
+            self.assertEqual(result["severity"], "CRITICAL")
+
+    def test_inspector_summarizes_mixed_batch(self) -> None:
+        events = generate_batch(
+            vehicle_count=10,
+            rounds=5,
+            scenario="mixed",
+            seed=99,
+        )
+
+        summary = inspect_records(events)
+        self.assertIsNotNone(summary)
+
+
+if __name__ == "__main__":
+    unittest.main()
 
 | Date | AI Tool | Purpose | Human Verification |
 |---|---|---|---|
