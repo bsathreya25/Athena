@@ -209,6 +209,13 @@ for filename, content in documents.items():
 | Record inspection | Classifies each record, counts how many records have each severity, and counts issues by their type. It also prepares a list for flagged records. |
 | Excerpt limit | The provided excerpt ends while processing issues, so it doesn’t show how flagged records are populated or what summary is returned. |
 
+| Test | Written description |
+|---|---|
+| Sample payload severity checks | Loads the sample payload cases and checks that each one receives its expected severity. Each case is reported separately if it fails. |
+| Normal generator scenario | Generates telemetry for 5 vehicles over 3 rounds, expecting 15 records. It verifies each record is valid and classified as normal. |
+| Critical overheating scenario | Generates telemetry for 3 vehicles over 2 rounds and checks that every generated record is classified as critical. |
+| Mixed batch inspector | Generates a mixed batch for 10 vehicles over 5 rounds and passes it to the inspector. The excerpt ends before showing what inspection results are checked. |
+
 | Test case | Temperature | Voltage | Generated status |
 |---|---:|---:|---|
 | TC01 - Normal | 28 | 5.0 | NORMAL |
