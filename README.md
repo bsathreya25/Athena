@@ -223,6 +223,13 @@ for filename, content in documents.items():
 | Mixed batch inspector | Generates a mixed batch for 10 vehicles over 5 rounds and passes it to the inspector. The excerpt ends before showing what inspection results are checked. |
 
 
+| Case | Written description |
+|---|---|
+| TC-01 — Normal operation | Vehicle ATH-001 reports an engine temperature of 85°C, speed of 54.5 km/h, battery voltage of 13.6 volts, fuel level of 72%, and engine speed of 2,150 RPM. Its GPS coordinates are in Bengaluru, and it has no diagnostic trouble codes. Expected severity: normal. |
+| TC-02 — High engine temperature | Vehicle ATH-002 reports an engine temperature of 99.5°C, speed of 48 km/h, battery voltage of 13.4 volts, fuel level of 65%, and engine speed of 2,900 RPM. Its GPS coordinates are also in Bengaluru, and it has no diagnostic trouble codes. Expected severity: warning. |
+| TC-03 — Critical temperature and cooling stress | Vehicle ATH-003 reports an engine temperature of 112°C, speed of 12 km/h, battery voltage of 13.1 volts, and fuel level of 58%. The case is expected to be critical. The provided excerpt ends before showing the remaining fields. |
+
+
 
 | Test case | Temperature | Voltage | Generated status |
 |---|---:|---:|---|
