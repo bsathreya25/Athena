@@ -221,3 +221,30 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ATHENA: ADDITIONAL VIRTUAL ENVIRONMENTS
+.venv-*/
+env.bak/
+venv.bak/
+
+# ATHENA: SECRETS
+.env.*
+!.env.example
+
+# ATHENA: LOCAL DATABASES AND BACKUPS
+data/
+backups/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# ATHENA: LOCAL EDITOR SETTINGS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# ATHENA: TEMPORARY FILES
+*.tmp
