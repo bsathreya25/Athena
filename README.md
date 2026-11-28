@@ -1046,6 +1046,20 @@ def run_vigilant_tests() -> None:
 
 if __name__ == "__main__":
     run_vigilant_tests()
+    | Test case | Temperature | Voltage | Generated status |
+|---|---:|---:|---|
+| TC01 - Normal | 28 | 5.0 | NORMAL |
+| TC02 - Normal | 32 | 4.8 | NORMAL |
+| TC03 - High Temperature | 42 | 5.0 | HIGH TEMPERATURE WARNING |
+| TC04 - Critical Temperature | 65 | 5.0 | CRITICAL ALERT |
+| TC05 - Low Voltage | 30 | 2.5 | LOW VOLTAGE WARNING |
+| TC06 - High Temp + Low Voltage | 45 | 2.5 | HIGH TEMPERATURE WARNING |
+| TC07 - Missing Temperature | None | 5.0 | ERROR: DATA MISSING |
+| TC08 - Missing Voltage | 30 | None | ERROR: DATA MISSING |
+| TC09 - Invalid Temperature | -200 | 5.0 | ERROR: INVALID SENSOR VALUE |
+| TC10 - Invalid Voltage | 30 | -5.0 | ERROR: INVALID SENSOR VALUE |
+| TC11 - Empty Input | None | None | ERROR: DATA MISSING |
+| TC12 - Extreme Temperature | 100 | 5.0 | CRITICAL ALERT |
 | Date | AI Tool | Purpose | Human Verification |
 |---|---|---|---|
 | YYYY-MM-DD | ChatGPT | Documentation assistance | Pending |
