@@ -187,6 +187,8 @@ for filename, content in documents.items():
 | Supported scenarios | The generator supports normal operation, high temperature, critical overheating, low voltage, missing data, invalid values, and mixed scenarios. |
 | UTC timestamp helper | The helper returns the current UTC date and time in ISO 8601 format, ending in `Z`. |
 
+
+
 | Section | Written form |
 |---|---|
 | Module purpose | Defines ATHENA’s canonical vehicle telemetry schema, validation rules, and rule evaluation. |
@@ -199,6 +201,8 @@ for filename, content in documents.items():
 | `fuel_level_pct` | Required numeric field for fuel level. Valid range: 0% to 100%. |
 | `rpm` | Required numeric field for engine RPM. The excerpt ends before its range or unit is shown. |
 
+
+
 | Part | Written description |
 |---|---|
 | Purpose | Inspects generated vehicle telemetry stored as JSON or JSON Lines and checks its schema and alert accuracy. |
@@ -209,12 +213,16 @@ for filename, content in documents.items():
 | Record inspection | Classifies each record, counts how many records have each severity, and counts issues by their type. It also prepares a list for flagged records. |
 | Excerpt limit | The provided excerpt ends while processing issues, so it doesn’t show how flagged records are populated or what summary is returned. |
 
+
+
 | Test | Written description |
 |---|---|
 | Sample payload severity checks | Loads the sample payload cases and checks that each one receives its expected severity. Each case is reported separately if it fails. |
 | Normal generator scenario | Generates telemetry for 5 vehicles over 3 rounds, expecting 15 records. It verifies each record is valid and classified as normal. |
 | Critical overheating scenario | Generates telemetry for 3 vehicles over 2 rounds and checks that every generated record is classified as critical. |
 | Mixed batch inspector | Generates a mixed batch for 10 vehicles over 5 rounds and passes it to the inspector. The excerpt ends before showing what inspection results are checked. |
+
+
 
 | Test case | Temperature | Voltage | Generated status |
 |---|---:|---:|---|
